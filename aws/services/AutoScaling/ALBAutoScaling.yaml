@@ -343,9 +343,9 @@ Resources:
     Properties:
       VPCZoneIdentifier : 
         - Fn::ImportValue:
-           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetA" 
+           Fn::Sub: "${PubSubnetZoneA}" 
         - Fn::ImportValue:
-           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetB"                    
+           Fn::Sub: "${PubSubnetZoneA}"                    
       LaunchConfigurationName: !Ref 'LaunchConfig'
       MinSize: '3'
       MaxSize: '4'
@@ -418,7 +418,7 @@ Resources:
           GroupDescription: 'SSH and Port 80'
           VpcId:
             Fn::ImportValue:
-              Fn::Sub: "${VpcId}-VPC"            
+              Fn::Sub: "${VpcId}"            
           SecurityGroupIngress:
               - IpProtocol: tcp
                 FromPort: 80
@@ -447,7 +447,7 @@ Resources:
       UnhealthyThresholdCount: 3
       VpcId:
         Fn::ImportValue:
-          Fn::Sub: "${VpcId}-VPC" 
+          Fn::Sub: "${VpcId}" 
       Tags:
       - Key: Name
         Value: EC2TargetGroup
@@ -470,9 +470,9 @@ Resources:
       Scheme: internet-facing 
       Subnets:
         - Fn::ImportValue:
-           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetA" 
+           Fn::Sub: "${PubSubnetZoneA}" 
         - Fn::ImportValue:
-           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetB" 
+           Fn::Sub: "${PubSubnetZoneA}" 
       SecurityGroups:
       - Ref: ELBSecurityGroup
 

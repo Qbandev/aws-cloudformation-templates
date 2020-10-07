@@ -314,6 +314,25 @@ Mappings:
 
 Resources:
 
+  EC2TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 5
+      Matcher:
+        HttpCode: '200-299'
+      Name: !Ref 'Stackname' 
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '200'
+      UnhealthyThresholdCount: 3
+      VpcId: 
+        Fn::ImportValue: VPC 
+
   WebServerGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     CreationPolicy:
@@ -334,6 +353,7 @@ Resources:
       LaunchConfigurationName: !Ref 'LaunchConfig'
       MinSize: '3'
       MaxSize: '4'
+    TargetGroupARNs: !Ref EC2TargetGroup
 
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -408,25 +428,17 @@ Resources:
                 ToPort: 80
                 CidrIp: 0.0.0.0/0
 
-  EC2TargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      HealthCheckIntervalSeconds: 30
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 15
-      HealthyThresholdCount: 5
-      Matcher:
-        HttpCode: '200'
-      Name: !Ref 'Stackname' 
-      Port: 80
-      Protocol: HTTP
-      TargetGroupAttributes:
-      - Key: deregistration_delay.timeout_seconds
-        Value: '20'
-      UnhealthyThresholdCount: 3
-      VpcId: 
-        Fn::ImportValue: VPC 
-
+      Scheme: internet-facing 
+      Subnets:
+        - Fn::ImportValue: !Sub 'PublicSubnetA' 
+        - Fn::ImportValue: !Sub 'PublicSubnetB'
+        - Fn::ImportValue: !Sub 'PublicSubnetC'
+      SecurityGroups:
+      - Ref: ELBSecurityGroup
+      
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -449,17 +461,6 @@ Resources:
         Actions:
             - TargetGroupArn: !Ref EC2TargetGroup
               Type: forward      
-
-  ApplicationLoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Scheme: internet-facing 
-      Subnets:
-        - Fn::ImportValue: !Sub 'PublicSubnetA' 
-        - Fn::ImportValue: !Sub 'PublicSubnetB'
-        - Fn::ImportValue: !Sub 'PublicSubnetC'
-      SecurityGroups:
-      - Ref: ELBSecurityGroup
 
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup

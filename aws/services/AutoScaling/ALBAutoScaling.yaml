@@ -414,8 +414,8 @@ Resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
           GroupDescription: 'SSH and Port 80'
-          VpcId:
-            Fn::ImportValue: !Sub 'VpcCidr'            
+          VpcId: vpc-0af30f0914f8950d0
+            #Fn::ImportValue: !Sub 'VpcCidr'            
           SecurityGroupIngress:
               - IpProtocol: tcp
                 FromPort: 80
@@ -442,8 +442,8 @@ Resources:
           Ref: WebServerGroup
         Port: 80
       UnhealthyThresholdCount: 3
-      VpcId:
-        Fn::ImportValue: !Sub 'VpcCidr' 
+      VpcId: vpc-0af30f0914f8950d0
+        #Fn::ImportValue: !Sub 'VpcCidr' 
       Tags:
       - Key: Name
         Value: EC2TargetGroup
@@ -473,8 +473,8 @@ Resources:
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId:
-        Fn::ImportValue: !Sub 'VpcCidr'    
+      VpcId: vpc-0af30f0914f8950d0
+        #Fn::ImportValue: !Sub 'VpcCidr'    
       GroupDescription: Enable SSH access and HTTP access on the configured port
       SecurityGroupIngress:
       - IpProtocol: tcp

@@ -353,7 +353,8 @@ Resources:
       LaunchConfigurationName: !Ref 'LaunchConfig'
       MinSize: '3'
       MaxSize: '4'
-      TargetGroupARNs: !Ref EC2TargetGroup
+      TargetGroupARNs: 
+        - !Ref EC2TargetGroup
 
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration

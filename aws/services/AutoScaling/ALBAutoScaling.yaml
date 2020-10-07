@@ -473,6 +473,8 @@ Resources:
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
+      VpcId:
+        Fn::ImportValue: !Sub 'VPC'    
       GroupDescription: Enable SSH access and HTTP access on the configured port
       SecurityGroupIngress:
       - IpProtocol: tcp

@@ -459,8 +459,6 @@ Resources:
       Tags:
       - Key: Name
         Value: EC2TargetGroup
-      - Key: Port
-          Value: 80
 
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener

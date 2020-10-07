@@ -38,15 +38,15 @@ Parameters:
   VpcId:
     Description: The VPC which contains the public subnet
     Type: AWS::EC2::VPC::Id
-    Default: test-base-VPC-14FJRMO3ZCUYX
+    Default: VPC
   PubSubnetZoneA:
     Description: The public subnet into which you want to launch the template
     Type: AWS::EC2::Subnet::Id
-    Default: test-base-VPC-14FJRMO3ZCUYX
+    Default: PublicSubnetA
   PubSubnetZoneB:
     Description: The public subnet into which you want to launch
     Type: AWS::EC2::Subnet::Id
-    Default: test-base-VPC-14FJRMO3ZCUYX
+    Default: PublicSubnetB
  
 
 Mappings:

@@ -467,7 +467,7 @@ Resources:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
-      Roles: !Ref 'DescribeHealthRole'
+      Roles: [!Ref 'DescribeHealthRole']
 
   DescribeHealthRole:
     Type: AWS::IAM::Role
@@ -476,15 +476,15 @@ Resources:
         Statement:
         - Effect: Allow
           Principal:
-            Service: ec2.amazonaws.com
-          Action: 'sts:AssumeRole'
+            Service: [ec2.amazonaws.com]
+          Action: ['sts:AssumeRole']
       Path: /
       Policies:
       - PolicyName: describe-instance-health-policy
         PolicyDocument:
           Statement:
           - Effect: Allow
-            Action: 'elasticloadbalancing:DescribeInstanceHealth'
+            Action: ['elasticloadbalancing:DescribeInstanceHealth']
             Resource: '*'
 
 Outputs:

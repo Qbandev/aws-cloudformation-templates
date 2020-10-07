@@ -328,8 +328,9 @@ Resources:
         WaitOnResourceSignals: 'true'
     Properties:
       VPCZoneIdentifier : 
-        - Fn::ImportValue: !Sub 'PublicSubnetA' 
-        - Fn::ImportValue: !Sub 'PublicSubnetB'
+        - Fn::ImportValue: !Sub 'PrivateSubnetA' 
+        - Fn::ImportValue: !Sub 'PrivateSubnetB'
+        - Fn::ImportValue: !Sub 'PrivateSubnetC'        
       LaunchConfigurationName: !Ref 'LaunchConfig'
       MinSize: '3'
       MaxSize: '4'
@@ -422,7 +423,6 @@ Resources:
       TargetGroupAttributes:
       - Key: deregistration_delay.timeout_seconds
         Value: '20'
-      TargetType: ip  
       UnhealthyThresholdCount: 3
       VpcId: 
         Fn::ImportValue: VPC 
@@ -437,6 +437,19 @@ Resources:
       Port: 80
       Protocol: HTTP
 
+  ALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+        ListenerArn: !Ref ALBListener
+        Priority: 3
+        Conditions:
+            - Field: path-pattern
+              Values:
+                - /
+        Actions:
+            - TargetGroupArn: !Ref EC2TargetGroup
+              Type: forward      
+
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -444,6 +457,7 @@ Resources:
       Subnets:
         - Fn::ImportValue: !Sub 'PublicSubnetA' 
         - Fn::ImportValue: !Sub 'PublicSubnetB'
+        - Fn::ImportValue: !Sub 'PublicSubnetC'
       SecurityGroups:
       - Ref: ELBSecurityGroup
 

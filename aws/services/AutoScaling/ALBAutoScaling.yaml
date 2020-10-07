@@ -6,7 +6,7 @@ Description: 'AWS CloudFormation ALB AutoScaling:
   health check. The Auto Scaling launch configuration includes an update policy that
   will keep 2 instances running while doing an autoscaling rolling update. The update
   will roll forward only when the ALB health check detects an updated instance in-service.
-  **WARNING** This template creates one or more Amazon EC2  instances and an Aplication
+  **WARNING** This template creates one or more Amazon EC2  instances and an Elastic
   Load Balancer. You will be billed for the AWS resources used if you create a stack
   from this template.'
 Parameters:
@@ -35,6 +35,20 @@ Parameters:
     Default: 0.0.0.0/0
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  VpcId:
+    Description: The VPC which contains the public subnet
+    Type: AWS::EC2::VPC::Id
+    Default: test-base-VPC-14FJRMO3ZCUYX
+  PubSubnetZoneA:
+    Description: The public subnet into which you want to launch the template
+    Type: AWS::EC2::Subnet::Id
+    Default: test-base-VPC-14FJRMO3ZCUYX
+  PubSubnetZoneB:
+    Description: The public subnet into which you want to launch
+    Type: AWS::EC2::Subnet::Id
+    Default: test-base-VPC-14FJRMO3ZCUYX
+ 
+
 Mappings:
   AWSInstanceType2Arch:
     t1.micro:
@@ -311,7 +325,9 @@ Mappings:
       PV64: ami-77559f1a
       HVM64: ami-8e6aa0e3
       HVMG2: NOT_SUPPORTED
+
 Resources:
+
   WebServerGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     CreationPolicy:
@@ -325,11 +341,16 @@ Resources:
         PauseTime: PT15M
         WaitOnResourceSignals: 'true'
     Properties:
-      AvailabilityZones: !GetAZs ''
+      VPCZoneIdentifier : 
+        - Fn::ImportValue:
+           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetA" 
+        - Fn::ImportValue:
+           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetB"                    
       LaunchConfigurationName: !Ref 'LaunchConfig'
-      MinSize: '2'
+      MinSize: '3'
       MaxSize: '4'
-      LoadBalancerNames: [!Ref 'ElasticLoadBalancer']
+      TargetGroupARNs : !Ref ApplicationLoadBalancer
+
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Metadata:
@@ -367,7 +388,7 @@ Resources:
             /var/www/html/index.html:
               content: !Join
                 - ''
-                - - '<h1>Congratulations, you have successfully launched the AWS CloudFormation sample.</h1>'
+                - - '<h1>Ryanair test JACV successfully launched the AWS CloudFormation template</h1>'
                   - '<p>Version: 1.0</p>'
               mode: '000644'
               owner: root
@@ -398,21 +419,73 @@ Resources:
           yum install -y aws-cfn-bootstrap
           /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource LaunchConfig --configsets full_install --region ${AWS::Region}
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource WebServerGroup --region ${AWS::Region}
-  ElasticLoadBalancer:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+
+  ELBSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+          GroupDescription: 'SSH and Port 80'
+          VpcId:
+            Fn::ImportValue:
+              Fn::Sub: "${VpcId}-VPC"            
+          SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 80
+                ToPort: 80
+                CidrIp: 0.0.0.0/0
+
+  EC2TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      AvailabilityZones: !GetAZs ''
-      CrossZone: 'true'
-      Listeners:
-      - LoadBalancerPort: '80'
-        InstancePort: '80'
-        Protocol: HTTP
-      HealthCheck:
-        Target: HTTP:80/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
-        Interval: '30'
-        Timeout: '5'
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 15
+      HealthyThresholdCount: 5
+      Matcher:
+        HttpCode: '200'
+      Name: EC2TargetGroup
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '20'
+      Targets:
+      - Id:
+          Ref: WebServerGroup
+        Port: 80
+      UnhealthyThresholdCount: 3
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: "${VpcId}-VPC" 
+      Tags:
+      - Key: Name
+        Value: EC2TargetGroup
+      - Key: Port
+          Value: 80
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: EC2TargetGroup
+      LoadBalancerArn:
+          Ref: ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing 
+      Subnets:
+        - Fn::ImportValue:
+           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetA" 
+        - Fn::ImportValue:
+           Fn::Sub: "${PubSubnetZoneA}-PublicSubnetB" 
+      SecurityGroups:
+      - Ref: ELBSecurityGroup
+
   InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -426,11 +499,13 @@ Resources:
         FromPort: '80'
         ToPort: '80'
         CidrIp: 0.0.0.0/0
+
   WebServerInstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles: [!Ref 'DescribeHealthRole']
+
   DescribeHealthRole:
     Type: AWS::IAM::Role
     Properties:
@@ -448,7 +523,8 @@ Resources:
           - Effect: Allow
             Action: ['elasticloadbalancing:DescribeInstanceHealth']
             Resource: '*'
+
 Outputs:
   URL:
     Description: URL of the website
-    Value: !Join ['', ['http://', !GetAtt [ElasticLoadBalancer, DNSName]]]
+    Value: !GetAtt ApplicationLoadBalancer.DNSName

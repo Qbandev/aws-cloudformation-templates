@@ -437,10 +437,10 @@ Resources:
       TargetGroupAttributes:
       - Key: deregistration_delay.timeout_seconds
         Value: '20'
-      Targets:
-      - Id:
-          Ref: WebServerGroup
-        Port: 80
+      # Targets:
+      # - Id:
+      #     Ref: WebServerGroup
+      #   Port: 80
       UnhealthyThresholdCount: 3
       VpcId: #vpc-0af30f0914f8950d0
         Fn::ImportValue: VPC 

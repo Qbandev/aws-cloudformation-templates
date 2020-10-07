@@ -353,7 +353,7 @@ Resources:
       LaunchConfigurationName: !Ref 'LaunchConfig'
       MinSize: '3'
       MaxSize: '4'
-    TargetGroupARNs: !Ref EC2TargetGroup
+      TargetGroupARNs: !Ref EC2TargetGroup
 
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -438,7 +438,7 @@ Resources:
         - Fn::ImportValue: !Sub 'PublicSubnetC'
       SecurityGroups:
       - Ref: ELBSecurityGroup
-      
+
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:

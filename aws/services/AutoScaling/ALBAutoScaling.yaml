@@ -333,9 +333,6 @@ Resources:
       LaunchConfigurationName: !Ref 'LaunchConfig'
       MinSize: '3'
       MaxSize: '4'
-      Tags:
-          - Key: Name
-            Value: !Ref 'Stackname'      
 
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -409,9 +406,6 @@ Resources:
                 FromPort: 80
                 ToPort: 80
                 CidrIp: 0.0.0.0/0
-      Tags:
-          - Key: Name
-            Value: !Ref 'Stackname'                 
 
   EC2TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup

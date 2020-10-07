@@ -472,10 +472,16 @@ Resources:
         FromPort: '22'
         ToPort: '22'
         CidrIp: !Ref 'SSHLocation'
-      - IpProtocol: tcp
-        FromPort: '80'
-        ToPort: '80'
-        CidrIp: 0.0.0.0/0
+
+  InstanceIngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Loadbalancer G Zone to DPEP
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !GetAtt ELBSecurityGroup.GroupId
+      GroupId: !GetAtt InstanceIngressRule.GroupId        
 
   WebServerInstanceProfile:
     Type: AWS::IAM::InstanceProfile

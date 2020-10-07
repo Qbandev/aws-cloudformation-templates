@@ -476,12 +476,12 @@ Resources:
   InstanceIngressRule:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
-      Description: Loadbalancer G Zone to DPEP
+      Description: Loadbalancer to instance
       IpProtocol: tcp
       FromPort: 80
       ToPort: 80
       SourceSecurityGroupId: !GetAtt ELBSecurityGroup.GroupId
-      GroupId: !GetAtt InstanceIngressRule.GroupId        
+      GroupId: !GetAtt InstanceSecurityGroup.GroupId        
 
   WebServerInstanceProfile:
     Type: AWS::IAM::InstanceProfile

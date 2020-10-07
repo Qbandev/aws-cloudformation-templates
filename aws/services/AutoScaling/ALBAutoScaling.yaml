@@ -43,7 +43,7 @@ Parameters:
   #   Description: The public subnet into which you want to launch the template
   #   Type: AWS::EC2::Subnet::Id
   #   Default: PublicSubnetA
-  # PubSubnetZoneB:
+  # PublicSubnetB:
   #   Description: The public subnet into which you want to launch
   #   Type: AWS::EC2::Subnet::Id
   #   Default: PublicSubnetB
@@ -342,8 +342,8 @@ Resources:
         WaitOnResourceSignals: 'true'
     Properties:
       VPCZoneIdentifier : 
-        - Fn::ImportValue: !Sub 'PubSubnetZoneA' 
-        - Fn::ImportValue: !Sub 'PubSubnetZoneB'
+        - Fn::ImportValue: !Sub 'PublicSubnetA' 
+        - Fn::ImportValue: !Sub 'PublicSubnetB'
       LaunchConfigurationName: !Ref 'LaunchConfig'
       MinSize: '3'
       MaxSize: '4'
@@ -465,8 +465,8 @@ Resources:
     Properties:
       Scheme: internet-facing 
       Subnets:
-        - Fn::ImportValue: !Sub 'PubSubnetZoneA' 
-        - Fn::ImportValue: !Sub 'PubSubnetZoneB'
+        - Fn::ImportValue: !Sub 'PublicSubnetA' 
+        - Fn::ImportValue: !Sub 'PublicSubnetB'
       SecurityGroups:
       - Ref: ELBSecurityGroup
 

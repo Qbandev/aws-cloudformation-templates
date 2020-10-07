@@ -356,7 +356,7 @@ Resources:
     Metadata:
       AWS::CloudFormation::Init:
         configSets:
-          full_install: [install_cfn, install_app, verify_instance_health]
+          full_install: [install_cfn, install_app]
         install_cfn:
           files:
             /etc/cfn/cfn-hup.conf:
@@ -398,14 +398,6 @@ Resources:
               httpd:
                 enabled: 'true'
                 ensureRunning: 'true'
-        verify_instance_health:
-          commands:
-            ELBHealthCheck:
-              command: !Sub
-                'until [ "$state" == "\"InService\"" ]; do state=$(aws --region ${AWS::Region} elb describe-instance-health
-                 --load-balancer-name ${ElasticLoadBalancer}
-                 --instances $(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-                 --query InstanceStates[0].State); sleep 10; done'
     Properties:
       KeyName: !Ref 'KeyName'
       ImageId: !FindInMap [AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [AWSInstanceType2Arch,
